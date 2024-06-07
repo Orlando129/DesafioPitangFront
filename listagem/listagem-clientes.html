@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listagem de Clientes - Pitang</title>
+    <link rel="stylesheet" href="/styles/style.css">
+    <link rel="stylesheet" href="listagemfooter.css">
+    <link rel="shortcut icon" href="/images/pitang-favicon.png" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css?family=Palanquin+Dark" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+</head>
+<style></style>
+<body>
+    <header>
+        <nav>
+            <a class="link_da_pitang" href="https://www.pitang.com/"><img class="logo" src="/images/pitang-logo2.png" alt="logo da pitang"></a>
+        </nav>
+        <nav class="navbar">
+            <a href="/listagem/listagem-clientes.html" class="linkpaginas" rel="next" target="_self"><strong>Listagem de Clientes</strong></a>
+            <a href="/cadastro/cadastro-cliente.html" rel="next" target="_self">Cadastro de Cliente</a>
+            <a href="/login/entrar.html" rel="next" target="_self" id="logoutButton"> Sair </a>
+        </nav>
+    </header>
+
+    <main>
+        <table id="listaClientes">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Nome</th>
+                    <th>CNPJ</th>
+                    <th>Crédito</th>
+                    <th>Email</th>
+                    <th>Webhook</th> 
+                    <th>Status</th>
+                    <th>Responsável</th>
+                    <th>API Key</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <br>
+    </main>
+
+    <script>
+        function handleDropdownChange(select, clientId) {
+            const selectedAction = select.value;
+            if (selectedAction === "excluir") {
+                if (confirm(`Deseja realmente excluir o cliente?`)) {
+                    fetch(`https://desafiopitang-production.up.railway.app/client/delete/${clientId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem("token")}`
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            location.reload();
+                        } else {
+                            console.error('Erro ao excluir cliente');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Erro ao enviar requisição:', error);
+                    });
+                }
+            } else if (selectedAction === "ativar") {
+                fetch(`https://desafiopitang-production.up.railway.app/client/activate/${clientId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem("token")}`
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        console.error('Falha ao ativar o cliente');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro ao enviar requisição:', error);
+                });
+            } else if (selectedAction === "visualizar") {
+                window.location.href = `/visualizar/visualizar-cliente.html?clienteId=${clientId}`;
+            } else if (selectedAction === "editar") {
+                window.location.href = `/editar_cliente/editar-cliente.html?clienteId=${clientId}`;
+            }
+        }
+
+        function excluirCliente(clienteId) {
+            fetch(`https://desafiopitang-production.up.railway.app/client/delete/${clienteId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    fetchClientes();
+                } else {
+                    console.error('Erro ao excluir cliente');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao enviar requisição:', error);
+            });
+        }
+
+        function ativarCliente(clienteId) {
+            fetch(`https://desafiopitang-production.up.railway.app/client/activate/${clienteId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    fetchClientes();
+                } else {
+                    throw new Error('Falha ao ativar o cliente');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao enviar requisição:', error);
+            });
+        }
+
+        function fetchClientes() {
+            fetch('https://desafiopitang-production.up.railway.app/client', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('Resposta do backend:', result);
+
+                const clientes = Array.isArray(result) ? result : [result];
+                const tbody = document.querySelector('#listaClientes tbody');
+                tbody.innerHTML = '';
+
+                clientes.forEach(cliente => {
+                    const row = document.createElement('tr');
+
+                    let cell = document.createElement('td');
+                    row.appendChild(cell);
+                    
+                    cell = document.createElement('td');
+                    cell.textContent = cliente.nomeCliente;
+                    row.appendChild(cell);
+
+                    cell = document.createElement('td');
+                    cell.textContent = cliente.cnpjCliente;
+                    row.appendChild(cell);
+
+                    cell = document.createElement('td');
+                    cell.textContent = cliente.creditosPaginas;
+                    row.appendChild(cell);
+
+                    cell = document.createElement('td');
+                    cell.textContent = cliente.emailCliente;
+                    row.appendChild(cell);
+
+                    const webhookCell = document.createElement('td'); 
+                    webhookCell.textContent = cliente.webhook || 'N/A'; 
+                    row.appendChild(webhookCell);
+
+                    const statusCell = document.createElement('td');
+                    statusCell.textContent = cliente.status;
+                    row.appendChild(statusCell);
+                    
+                    const responsavelCell = document.createElement('td');
+                    responsavelCell.textContent = cliente.responsavel || 'N/A';
+                    row.appendChild(responsavelCell);
+
+                    const apiKeyCell = document.createElement('td');
+                    apiKeyCell.textContent = cliente.apiKey || 'N/A';
+                    row.appendChild(apiKeyCell);
+
+                    const dropdownCell = document.createElement('td');
+                    const dropdownSelect = document.createElement('select');
+                    const actions = ["Selecione uma ação", "excluir", "ativar", "editar", "visualizar"];
+
+                    actions.forEach(action => {
+                        const option = document.createElement('option');
+                        option.value = action;
+                        option.textContent = action.charAt(0).toUpperCase() + action.slice(1);
+                        dropdownSelect.appendChild(option);
+                    });
+
+                    dropdownSelect.addEventListener('change', () => {
+                        handleDropdownChange(dropdownSelect, cliente.id);
+                    });
+
+                    dropdownCell.appendChild(dropdownSelect);
+                    row.appendChild(dropdownCell);
+
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(error => {
+                console.error('Erro ao enviar requisição:', error);
+            });
+        }
+
+        (function () {
+            if (!localStorage.getItem('token')) {
+                window.location.href = '/login/entrar.html';
+            }
+
+            fetchClientes();
+
+            const sairButton = document.querySelector('#logoutButton');
+            sairButton.addEventListener('click', function () {
+                localStorage.removeItem('token');
+            });
+        })();
+    </script>
+</body>
+
+<footer class="rodape">
+    <div class="waves">
+        <div class="wave" id="wave1"></div>
+        <div class="wave" id="wave2"></div>
+        <div class="wave" id="wave3"></div>
+        <div class="wave" id="wave4"></div>
+    </div>
+    <div class="rodape-div-1">
+        <div class="rodape-div-1-coluna">
+            <img src="/images/pitang-logo2.png" alt="logo pitang" title="Pitang" class="logo1">
+            <p>Cais do Apolo, 222 - 13º Andar</p>
+            <p>Recife, PE, 50030-230</p>
+            <p>Telefone: (81) 3134-5200</p>
+        </div>
+    </div>
+    <div class="rodape-div-2">
+        <div class="rodape-div-2-coluna">
+            <h3>Contato da Pitang</h3>
+            <p>Visite nosso <a class="link" href="https://www.pitang.com/">site oficial</a> para conhecer melhor a Pitang.
+            <div class="redes_sociais_brancas informacoes_de_contato">
+                <h3 class="redes_titulo">Redes Sociais</h3>
+                <p class="links">
+                    <a href="https://www.instagram.com/pitang_agileit/" target="_blank">
+                        <img src="/images/instagram.png" alt="Instagram">
+                    </a>
+                    <a href="https://br.linkedin.com/company/pitang" target="_blank">
+                        <img src="/images/-linkedin.png" alt="LinkedIn">
+                    </a>
+                    <a href="https://www.facebook.com/pitangagileit/?locale=pt_BR" target="_blank">
+                        <img src="/images/-facebook.png" alt="Facebook">
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <p class="rodape-direitos">Copyright © 2024 – Todos os Direitos Reservados.</p>
+</footer>
+
+</html>
+

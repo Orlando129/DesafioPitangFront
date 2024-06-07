@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualização do Cliente</title>
+    <link rel="stylesheet" href="/styles/style.css">
+    <link rel="stylesheet" href="/visualizar/visualizarfooter.css">
+    <link rel="shortcut icon" href="/images/pitang-favicon.png" type="image/x-icon">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Palanquin+Dark" rel="stylesheet">
+</head>
+
+<body>
+
+    <nav>
+        <a class="link_da_pitang" href="https://www.pitang.com/"><img class="logo" src="/images/pitang-logo2.png" alt="logo da pitang"></a>
+    </nav>
+
+    <nav class="navbar">
+        <a href="/listagem/listagem-clientes.html" class="linkpaginas" rel="next" target="_self">Listagem de Clientes</a>
+        <a href="/visualizar/visualizar-cliente.html" id="visualizacaoClienteLink" rel="next" target="_self"><strong>Visualizar Cliente</strong></a>
+        <a href="/cadastro/cadastro-cliente.html" rel="next" target="_self">Cadastro de Cliente</a>
+        <a href="/login/entrar.html" id="sairLink" rel="next" target="_self">Sair</a>
+    </nav>
+
+    <main>
+        <div>
+            <p class="infoCampo"><strong>Nome:</strong> <span id="nomeCliente"></span><br></p>
+            <p class="infoCampo"><strong>CNPJ:</strong> <span id="cnpjCliente"></span></p>
+            <p class="infoCampo"><strong>Endereço:</strong> <span id="enderecoCliente"></span></p>
+            <p class="infoCampo"><strong>Email:</strong> <span id="emailCliente"></span></p>
+            <p class="infoCampo"><strong>Telefone:</strong> <span id="telefoneCliente"></span></p>
+            <p class="infoCampo"><strong>Responsável:</strong> <span id="responsavel"></span></p>
+            <p class="infoCampo"><strong>Créditos de Páginas:</strong> <span id="creditosPaginas"></span></p>
+            <p class="infoCampo"><strong>WebHook:</strong> <span id="webhook"></span></p>
+            <br>
+        </div>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // Verifica se o token está presente no localStorage
+                if (!localStorage.getItem('token')) {
+                    // Redireciona para a página de login se o token não estiver presente
+                    window.location.href = '/login/entrar.html';
+                }
+    
+                const urlParams = new URLSearchParams(window.location.search);
+                const clienteId = urlParams.get("clienteId");
+    
+                if (clienteId) {
+                    fetch(`https://desafiopitang-production.up.railway.app/client/get?id=${clienteId}`, {method:
+                    'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem("token")}`
+                }})
+                        
+                        .then(response => response.json())
+                        .then(cliente => {
+                            if (cliente) {
+                                document.getElementById("nomeCliente").textContent = cliente.nomeCliente;
+                                document.getElementById("cnpjCliente").textContent = cliente.cnpjCliente;
+                                document.getElementById("enderecoCliente").textContent = cliente.enderecoCliente;
+                                document.getElementById("emailCliente").textContent = cliente.emailCliente;
+                                document.getElementById("telefoneCliente").textContent = cliente.telefoneCliente;
+                                document.getElementById("responsavel").textContent = cliente.responsavel;
+                                document.getElementById("creditosPaginas").textContent = cliente.creditosPaginas;
+                                document.getElementById("webhook").textContent = cliente.webhook; 
+                            } else {
+                                alert("Cliente não encontrado!");
+                            }
+                        })
+                        .catch(error => console.error('Erro ao carregar dados do cliente:', error));
+                }
+            });
+
+            const sairLink = document.getElementById('sairLink');
+            sairLink.addEventListener('click', function (event) {
+                event.preventDefault(); // Evita a navegação padrão
+                localStorage.removeItem('token'); // Remove o token do localStorage
+                window.location.href = '/login/entrar.html'; // Redireciona para a página de login
+            });
+        </script>
+    </main>
+
+    <footer class="rodape">
+        <div class="waves">
+            <div class="wave" id="wave1"></div>
+            <div class="wave" id="wave2"></div>
+            <div class="wave" id="wave3"></div>
+            <div class="wave" id="wave4"></div>
+        </div>
+        <div class="rodape-div-1">
+            <div class="rodape-div-1-coluna">
+                <img src="/images/pitang-logo2.png" alt="logo pitang" title="Pitang" class="logo1">
+                <p>Cais do Apolo, 222 - 13º Andar</p>
+                <p>Recife, PE, 50030-230</p>
+                <p>Telefone: (81) 3134-5200</p>
+            </div>
+        </div>
+        <div class="rodape-div-2">
+            <div class="rodape-div-2-coluna">
+                <h3>Contato da Pitang</h3>
+                <p>Visite nosso <a class="link" href="https://www.pitang.com/">site oficial</a> para conhecer melhor a Pitang.
+                <div class="redes_sociais_brancas informacoes_de_contato">
+                    <h3 class="redes_titulo">Redes Sociais</h3>
+                    <p class="links">
+                        <a href="https://www.instagram.com/pitang_agileit/" target="_blank">
+                            <img src="/images/instagram.png" alt="Instagram">
+                        </a>
+                        <a href="https://br.linkedin.com/company/pitang" target="_blank">
+                            <img src="/images/-linkedin.png" alt="LinkedIn">
+                        </a>
+                        <a href="https://www.facebook.com/pitangagileit/?locale=pt_BR" target="_blank">
+                            <img src="/images/-facebook.png" alt="Facebook">
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <p class="rodape-direitos">Copyright © 2024 – Todos os Direitos Reservados.</p>
+    </footer>
+
+</body>
+
+</html>
